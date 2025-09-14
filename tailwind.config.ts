@@ -100,6 +100,10 @@ export default {
         "glow": {
           "0%, 100%": { filter: "drop-shadow(0 0 5px hsl(var(--like-glow) / 0.5))" },
           "50%": { filter: "drop-shadow(0 0 20px hsl(var(--like-glow) / 0.8))" }
+        },
+        "slide-in-up": {
+          "0%": { transform: "translateY(100%)" },
+          "100%": { transform: "translateY(0)" }
         }
       },
       animation: {
@@ -110,7 +114,8 @@ export default {
         "bounce-in": "bounce-in 0.6s ease-out",
         "heart-beat": "heart-beat 1.2s ease-in-out infinite",
         "float": "float 3s ease-in-out infinite",
-        "glow": "glow 2s ease-in-out infinite"
+        "glow": "glow 2s ease-in-out infinite",
+        "slide-in-up": "slide-in-up 0.3s ease-out"
       },
     },
   },

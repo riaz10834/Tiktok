@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Share, ChevronUp, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import CommentsModal from './CommentsModal';
 
 interface Video {
   id: string;
@@ -25,6 +26,7 @@ interface VideoFeedProps {
 const VideoFeed = ({ videos, onLike, onComment, onShare }: VideoFeedProps) => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   const currentVideo = videos[currentVideoIndex];
@@ -85,7 +87,7 @@ const VideoFeed = ({ videos, onLike, onComment, onShare }: VideoFeedProps) => {
       </div>
 
       {/* Navigation Controls */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-20">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-20">
         <Button
           variant="ghost"
           size="icon"
@@ -143,7 +145,7 @@ const VideoFeed = ({ videos, onLike, onComment, onShare }: VideoFeedProps) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onComment(currentVideo.id)}
+            onClick={() => setIsCommentsOpen(true)}
             className="w-12 h-12 rounded-full text-white hover:text-blue-400 hover:scale-110 transition-all duration-200"
           >
             <MessageCircle className="w-7 h-7" />
@@ -203,6 +205,14 @@ const VideoFeed = ({ videos, onLike, onComment, onShare }: VideoFeedProps) => {
           />
         ))}
       </div>
+
+      {/* Comments Modal */}
+      <CommentsModal
+        isOpen={isCommentsOpen}
+        onClose={() => setIsCommentsOpen(false)}
+        videoId={currentVideo.id}
+        videoUsername={currentVideo.username}
+      />
     </div>
   );
 };
