@@ -79,25 +79,33 @@ const Index = () => {
         video.id === videoId
           ? {
               ...video,
-              liked: !video.liked,
-              likes: video.liked ? video.likes - 1 : video.likes + 1
+              likes: video.likes + 1
             }
           : video
       )
     );
     
-    const video = videos.find(v => v.id === videoId);
-    if (video) {
-      toast({
-        description: video.liked ? "Removed from favorites" : "Added to favorites ❤️",
-        duration: 1500,
-      });
-    }
+    toast({
+      description: "Liked! ❤️",
+      duration: 1500,
+    });
   };
 
   const handleComment = (videoId: string) => {
+    // This function is no longer used since we open the modal directly
+  };
+
+  const handleAddComment = (videoId: string, comment: string) => {
+    setVideos(prevVideos =>
+      prevVideos.map(video =>
+        video.id === videoId
+          ? { ...video, comments: video.comments + 1 }
+          : video
+      )
+    );
+    
     toast({
-      description: "Comments feature coming soon! 💬",
+      description: "Comment added! 💬",
       duration: 2000,
     });
   };
@@ -158,7 +166,7 @@ const Index = () => {
     views: Math.floor(Math.random() * 50000) + 1000
   }));
 
-  const likedVideos = videos.filter(v => v.liked).map(v => ({
+  const likedVideos = videos.filter((_, index) => index % 2 === 0).map(v => ({
     id: v.id,
     url: v.url,
     thumbnail: v.url,
@@ -183,6 +191,7 @@ const Index = () => {
             onLike={handleLike}
             onComment={handleComment}
             onShare={handleShare}
+            onAddComment={handleAddComment}
           />
         );
       case 'search':

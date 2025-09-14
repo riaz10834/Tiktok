@@ -19,9 +19,10 @@ interface CommentsModalProps {
   onClose: () => void;
   videoId: string;
   videoUsername: string;
+  onAddComment: (videoId: string, comment: string) => void;
 }
 
-const CommentsModal = ({ isOpen, onClose, videoId, videoUsername }: CommentsModalProps) => {
+const CommentsModal = ({ isOpen, onClose, videoId, videoUsername, onAddComment }: CommentsModalProps) => {
   const [comments, setComments] = useState<Comment[]>([
     {
       id: '1',
@@ -62,6 +63,7 @@ const CommentsModal = ({ isOpen, onClose, videoId, videoUsername }: CommentsModa
         likes: 0
       };
       setComments(prev => [comment, ...prev]);
+      onAddComment(videoId, newComment);
       setNewComment('');
     }
   };

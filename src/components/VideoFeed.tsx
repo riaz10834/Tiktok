@@ -21,9 +21,10 @@ interface VideoFeedProps {
   onLike: (videoId: string) => void;
   onComment: (videoId: string) => void;
   onShare: (videoId: string) => void;
+  onAddComment: (videoId: string, comment: string) => void;
 }
 
-const VideoFeed = ({ videos, onLike, onComment, onShare }: VideoFeedProps) => {
+const VideoFeed = ({ videos, onLike, onComment, onShare, onAddComment }: VideoFeedProps) => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
@@ -126,14 +127,9 @@ const VideoFeed = ({ videos, onLike, onComment, onShare }: VideoFeedProps) => {
             variant="ghost"
             size="icon"
             onClick={() => onLike(currentVideo.id)}
-            className={cn(
-              "w-12 h-12 rounded-full hover:scale-110 transition-all duration-200",
-              currentVideo.liked 
-                ? "text-red-500 animate-heart-beat" 
-                : "text-white hover:text-red-400"
-            )}
+            className="w-12 h-12 rounded-full text-white hover:text-red-400 hover:scale-110 transition-all duration-200"
           >
-            <Heart className={cn("w-7 h-7", currentVideo.liked && "fill-current")} />
+            <Heart className="w-7 h-7" />
           </Button>
           <span className="text-white text-sm font-medium">
             {formatCount(currentVideo.likes)}
@@ -212,6 +208,7 @@ const VideoFeed = ({ videos, onLike, onComment, onShare }: VideoFeedProps) => {
         onClose={() => setIsCommentsOpen(false)}
         videoId={currentVideo.id}
         videoUsername={currentVideo.username}
+        onAddComment={onAddComment}
       />
     </div>
   );

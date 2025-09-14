@@ -10,6 +10,7 @@ interface User {
   displayName: string;
   avatar: string;
   followers: number;
+  following: number;
   isFollowing: boolean;
   verified?: boolean;
 }
@@ -21,6 +22,7 @@ interface SearchPageProps {
 const SearchPage = ({ onFollow }: SearchPageProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // Mock users for demonstration
@@ -31,6 +33,7 @@ const SearchPage = ({ onFollow }: SearchPageProps) => {
       displayName: 'Sarah Johnson',
       avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
       followers: 45600,
+      following: 892,
       isFollowing: false,
       verified: true
     },
@@ -40,6 +43,7 @@ const SearchPage = ({ onFollow }: SearchPageProps) => {
       displayName: 'Mike Chen',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
       followers: 23400,
+      following: 456,
       isFollowing: true
     },
     {
@@ -48,6 +52,7 @@ const SearchPage = ({ onFollow }: SearchPageProps) => {
       displayName: 'Emma Wilson',
       avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
       followers: 67800,
+      following: 123,
       isFollowing: false,
       verified: true
     },
@@ -57,9 +62,33 @@ const SearchPage = ({ onFollow }: SearchPageProps) => {
       displayName: 'Alex Rodriguez',
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
       followers: 34200,
+      following: 234,
       isFollowing: false
     }
   ];
+
+  // Initialize users on component mount
+  useState(() => {
+    setUsers(mockUsers);
+    setSearchResults([]);
+  });
+
+  const handleFollowToggle = (userId: string) => {
+    const updateUser = (userList: User[]) =>
+      userList.map(user =>
+        user.id === userId
+          ? {
+              ...user,
+              isFollowing: !user.isFollowing,
+              followers: user.isFollowing ? user.followers - 1 : user.followers + 1
+            }
+          : user
+      );
+
+    setUsers(updateUser);
+    setSearchResults(updateUser);
+    onFollow(userId);
+  };
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -67,7 +96,7 @@ const SearchPage = ({ onFollow }: SearchPageProps) => {
       setIsSearching(true);
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
-      const filtered = mockUsers.filter(user => 
+      const filtered = users.filter(user => 
         user.username.toLowerCase().includes(query.toLowerCase()) ||
         user.displayName.toLowerCase().includes(query.toLowerCase())
       );
@@ -146,13 +175,13 @@ const SearchPage = ({ onFollow }: SearchPageProps) => {
                 </div>
                 
                 <Button
-                  onClick={() => onFollow(user.id)}
+                  onClick={() => handleFollowToggle(user.id)}
                   variant={user.isFollowing ? "outline" : "default"}
                   size="sm"
                   className={cn(
                     "px-4 transition-all duration-200",
                     user.isFollowing
-                      ? "border-border text-foreground hover:bg-secondary"
+                      ? "border-border text-foreground hover:bg-destructive hover:text-destructive-foreground"
                       : "bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white border-0"
                   )}
                 >
@@ -180,7 +209,7 @@ const SearchPage = ({ onFollow }: SearchPageProps) => {
             // Popular suggestions when no search
             <div className="space-y-4">
               <h2 className="text-lg font-semibold">Popular Creators</h2>
-              {mockUsers.slice(0, 3).map((user) => (
+              {users.slice(0, 3).map((user) => (
                 <div key={user.id} className="flex items-center gap-3 p-3 rounded-lg bg-card hover:bg-card/80 transition-colors">
                   <div className="relative">
                     <img
@@ -205,13 +234,13 @@ const SearchPage = ({ onFollow }: SearchPageProps) => {
                   </div>
                   
                   <Button
-                    onClick={() => onFollow(user.id)}
+                    onClick={() => handleFollowToggle(user.id)}
                     variant={user.isFollowing ? "outline" : "default"}
                     size="sm"
                     className={cn(
                       "px-4 transition-all duration-200",
                       user.isFollowing
-                        ? "border-border text-foreground hover:bg-secondary"
+                        ? "border-border text-foreground hover:bg-destructive hover:text-destructive-foreground"
                         : "bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white border-0"
                     )}
                   >
