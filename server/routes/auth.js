@@ -3,19 +3,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
 import pool from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { uploadPublicUrl } from '../publicUrl.js';
+import { uploadsDir } from '../uploadsDir.js';
 
 const router = Router();
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
 
 const avatarUpload = multer({
   storage: multer.diskStorage({
