@@ -1,14 +1,18 @@
-import { useState } from 'react';
-import { Settings, Grid, Heart, Share } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Settings, Grid, Heart } from "lucide-react";
+import { FaRegComment, FaRegBookmark } from "react-icons/fa6";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import EditProfileModal from "@/components/EditProfileModal";
 
 interface Video {
   id: string;
   url: string;
   thumbnail: string;
   likes: number;
+  comments: number;
+  favorites: number;
   views: number;
 }
 
@@ -24,18 +28,22 @@ interface ProfilePageProps {
   };
   myVideos: Video[];
   likedVideos: Video[];
-  sharedVideos: Video[];
+  favoriteVideos: Video[];
   onVideoClick: (videoId: string) => void;
+  onLogout?: () => void;
+  onLoginClick?: () => void;
 }
 
-const ProfilePage = ({ 
-  user, 
-  myVideos, 
-  likedVideos, 
-  sharedVideos, 
-  onVideoClick 
+const ProfilePage = ({
+  user,
+  myVideos,
+  likedVideos,
+  favoriteVideos,
+  onVideoClick,
+  onLogout,
 }: ProfilePageProps) => {
-  const [activeTab, setActiveTab] = useState('my-videos');
+  const [activeTab, setActiveTab] = useState("my-videos");
+  const [editOpen, setEditOpen] = useState(false);
 
   const formatCount = (count: number) => {
     if (count < 1000) return count.toString();
@@ -50,21 +58,27 @@ const ProfilePage = ({
           <div
             key={video.id}
             onClick={() => onVideoClick(video.id)}
-            className="aspect-[9/16] bg-card rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+            className="aspect-[9/16] bg-card rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity relative"
           >
-            <div className="relative w-full h-full">
-              <video
-                src={video.url}
-                className="w-full h-full object-cover"
-                muted
-                preload="metadata"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-              <div className="absolute bottom-2 left-2 flex items-center gap-1">
-                <Heart className="w-3 h-3 text-white" />
-                <span className="text-xs text-white font-medium">
-                  {formatCount(video.likes)}
-                </span>
+            <video
+              src={video.url}
+              className="w-full h-full object-cover"
+              muted
+              preload="metadata"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-2 left-2 right-2 flex justify-between text-white text-xs">
+              <div className="flex items-center gap-1">
+                <Heart className="w-3 h-3" />
+                {formatCount(video.likes)}
+              </div>
+              <div className="flex items-center gap-1">
+                <FaRegComment className="w-3 h-3" />
+                {formatCount(video.comments)}
+              </div>
+              <div className="flex items-center gap-1">
+                <FaRegBookmark className="w-3 h-3" />
+                {formatCount(video.favorites)}
               </div>
             </div>
           </div>
@@ -81,128 +95,119 @@ const ProfilePage = ({
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20">
-      <div className="max-w-md mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-bold">@{user.username}</h1>
-          <Button variant="ghost" size="icon" className="text-foreground">
+    <div className="relative h-full bg-background text-foreground">
+      <div className="h-full overflow-y-auto pb-4">
+        <div className="flex items-center justify-center p-4 relative">
+          <h2 className="text-lg font-semibold">{user.displayName}</h2>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute right-3 top-3"
+            onClick={() => setEditOpen(true)}
+          >
             <Settings className="w-5 h-5" />
           </Button>
         </div>
 
-        {/* Profile Info */}
-        <div className="px-4 pb-6">
-          <div className="flex items-start gap-4 mb-4">
-            {/* Avatar */}
-            <div className="w-20 h-20 rounded-full overflow-hidden bg-muted">
-              <img
-                src={user.avatar}
-                alt={user.displayName}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Stats */}
-            <div className="flex-1 grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-lg font-bold text-foreground">
-                  {formatCount(user.following)}
-                </div>
-                <div className="text-sm text-muted-foreground">Following</div>
-              </div>
-              <div>
-                <div className="text-lg font-bold text-foreground">
-                  {formatCount(user.followers)}
-                </div>
-                <div className="text-sm text-muted-foreground">Followers</div>
-              </div>
-              <div>
-                <div className="text-lg font-bold text-foreground">
-                  {formatCount(user.likes)}
-                </div>
-                <div className="text-sm text-muted-foreground">Likes</div>
-              </div>
-            </div>
+        {/* Profile Image + Username */}
+        <div className="flex flex-col items-center px-4">
+          <div className="w-24 h-24 rounded-full overflow-hidden bg-muted mb-2">
+            <img
+              src={user.avatar}
+              alt={user.displayName}
+              className="w-full h-full object-cover"
+            />
           </div>
+          <h1 className="text-xl font-bold">@{user.username}</h1>
+          {user.bio && (
+            <p className="text-sm text-muted-foreground mt-1">{user.bio}</p>
+          )}
+        </div>
 
-          {/* Name and Bio */}
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">
-              {user.displayName}
-            </h2>
-            {user.bio && (
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {user.bio}
-              </p>
-            )}
+        {/* Stats */}
+        <div className="flex justify-around text-center px-8 mt-4">
+          <div>
+            <div className="text-lg font-bold">{formatCount(user.following)}</div>
+            <div className="text-sm text-muted-foreground">Following</div>
           </div>
+          <div>
+            <div className="text-lg font-bold">{formatCount(user.followers)}</div>
+            <div className="text-sm text-muted-foreground">Followers</div>
+          </div>
+          <div>
+            <div className="text-lg font-bold">{formatCount(user.likes)}</div>
+            <div className="text-sm text-muted-foreground">Likes</div>
+          </div>
+        </div>
 
-          {/* Edit Profile Button */}
-          <Button 
-            variant="outline" 
-            className="w-full mt-4 border-border text-foreground hover:bg-secondary"
+        <div className="px-4 mt-4 space-y-2">
+          <Button
+            type="button"
+            className="w-full"
+            variant="outline"
+            onClick={() => setEditOpen(true)}
           >
             Edit Profile
           </Button>
+          {onLogout && (
+            <Button type="button" className="w-full" variant="destructive" onClick={onLogout}>
+              Log out
+            </Button>
+          )}
         </div>
 
-        {/* Video Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4">
-          <TabsList className="w-full bg-transparent border-b border-border rounded-none p-0 h-auto">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4 mt-6">
+          <TabsList className="w-full border-b border-border rounded-none p-0 h-auto">
             <TabsTrigger
               value="my-videos"
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-3 border-b-2 rounded-none bg-transparent data-[state=active]:bg-transparent",
+                "flex-1 py-3 border-b-2 data-[state=active]:border-primary",
                 activeTab === "my-videos"
-                  ? "border-primary text-primary"
+                  ? "text-primary"
                   : "border-transparent text-muted-foreground"
               )}
             >
-              <Grid className="w-4 h-4" />
-              <span className="text-sm font-medium">My Videos</span>
+              <Grid className="w-4 h-4 mr-1" /> My Videos
             </TabsTrigger>
             <TabsTrigger
               value="liked"
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-3 border-b-2 rounded-none bg-transparent data-[state=active]:bg-transparent",
+                "flex-1 py-3 border-b-2 data-[state=active]:border-primary",
                 activeTab === "liked"
-                  ? "border-primary text-primary"
+                  ? "text-primary"
                   : "border-transparent text-muted-foreground"
               )}
             >
-              <Heart className="w-4 h-4" />
-              <span className="text-sm font-medium">Liked</span>
+              <Heart className="w-4 h-4 mr-1" /> Liked
             </TabsTrigger>
             <TabsTrigger
-              value="shared"
+              value="favorites"
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-3 border-b-2 rounded-none bg-transparent data-[state=active]:bg-transparent",
-                activeTab === "shared"
-                  ? "border-primary text-primary"
+                "flex-1 py-3 border-b-2 data-[state=active]:border-primary",
+                activeTab === "favorites"
+                  ? "text-primary"
                   : "border-transparent text-muted-foreground"
               )}
             >
-              <Share className="w-4 h-4" />
-              <span className="text-sm font-medium">Shared</span>
+              <FaRegBookmark className="w-4 h-4 mr-1" /> Favorites
             </TabsTrigger>
           </TabsList>
 
-          <div className="mt-4">
-            <TabsContent value="my-videos" className="mt-0">
-              <VideoGrid videos={myVideos} />
-            </TabsContent>
-            
-            <TabsContent value="liked" className="mt-0">
-              <VideoGrid videos={likedVideos} />
-            </TabsContent>
-            
-            <TabsContent value="shared" className="mt-0">
-              <VideoGrid videos={sharedVideos} />
-            </TabsContent>
-          </div>
+          <TabsContent value="my-videos" className="mt-4">
+            <VideoGrid videos={myVideos} />
+          </TabsContent>
+          <TabsContent value="liked" className="mt-4">
+            <VideoGrid videos={likedVideos} />
+          </TabsContent>
+          <TabsContent value="favorites" className="mt-4">
+            <VideoGrid videos={favoriteVideos} />
+          </TabsContent>
         </Tabs>
       </div>
+
+      <EditProfileModal isOpen={editOpen} onClose={() => setEditOpen(false)} />
     </div>
   );
 };

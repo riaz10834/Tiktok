@@ -1,14 +1,13 @@
 import { useState, useRef } from 'react';
-import { Upload, X, Video } from 'lucide-react';
+import { Upload, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (video: { url: string; description: string }) => void;
+  onUpload: (file: File, description: string) => Promise<void>;
 }
 
 const UploadModal = ({ isOpen, onClose, onUpload }: UploadModalProps) => {
@@ -22,40 +21,33 @@ const UploadModal = ({ isOpen, onClose, onUpload }: UploadModalProps) => {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith('video/')) {
       setSelectedFile(file);
-      // Create a local URL for preview
       const url = URL.createObjectURL(file);
       setVideoUrl(url);
     }
   };
 
   const handleUpload = async () => {
-    if (!videoUrl || !description.trim()) return;
-    
+    if (!selectedFile || !description.trim()) return;
+
     setIsUploading(true);
-    
-    // Simulate upload delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    onUpload({
-      url: videoUrl,
-      description: description.trim()
-    });
-    
-    // Reset form
-    setSelectedFile(null);
-    setDescription('');
-    setVideoUrl('');
-    setIsUploading(false);
-    onClose();
+    try {
+      await onUpload(selectedFile, description.trim());
+      setSelectedFile(null);
+      setDescription('');
+      setVideoUrl('');
+      onClose();
+    } catch {
+      // parent shows toast
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const resetForm = () => {
     setSelectedFile(null);
     setDescription('');
     setVideoUrl('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleClose = () => {
@@ -65,17 +57,16 @@ const UploadModal = ({ isOpen, onClose, onUpload }: UploadModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-card border-border">
+      <DialogContent className="w-[min(100vw-2rem,400px)] max-w-[400px] bg-card border-border rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-foreground flex items-center gap-2">
             <Video className="w-5 h-5 text-primary" />
             Upload Video
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
-          {/* File Upload Area */}
-          <div 
+          <div
             className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
             onClick={() => fileInputRef.current?.click()}
           >
@@ -86,7 +77,7 @@ const UploadModal = ({ isOpen, onClose, onUpload }: UploadModalProps) => {
               onChange={handleFileSelect}
               className="hidden"
             />
-            
+
             {selectedFile ? (
               <div className="space-y-2">
                 <Video className="w-12 h-12 text-primary mx-auto" />
@@ -98,33 +89,20 @@ const UploadModal = ({ isOpen, onClose, onUpload }: UploadModalProps) => {
             ) : (
               <div className="space-y-2">
                 <Upload className="w-12 h-12 text-muted-foreground mx-auto" />
-                <p className="text-sm text-muted-foreground">
-                  Click to select a video file
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  MP4, WebM, MOV up to 100MB
-                </p>
+                <p className="text-sm text-muted-foreground">Click to select a video file</p>
+                <p className="text-xs text-muted-foreground">MP4, WebM, MOV up to 100MB</p>
               </div>
             )}
           </div>
 
-          {/* Video Preview */}
           {videoUrl && (
             <div className="relative rounded-lg overflow-hidden bg-black">
-              <video
-                src={videoUrl}
-                className="w-full h-48 object-cover"
-                controls
-                muted
-              />
+              <video src={videoUrl} className="w-full h-48 object-cover" controls muted />
             </div>
           )}
 
-          {/* Description */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
-              Description
-            </label>
+            <label className="text-sm font-medium text-foreground">Description</label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -132,12 +110,9 @@ const UploadModal = ({ isOpen, onClose, onUpload }: UploadModalProps) => {
               className="min-h-[80px] bg-background border-border text-foreground placeholder:text-muted-foreground"
               maxLength={150}
             />
-            <p className="text-xs text-muted-foreground text-right">
-              {description.length}/150
-            </p>
+            <p className="text-xs text-muted-foreground text-right">{description.length}/150</p>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3 pt-2">
             <Button
               variant="outline"

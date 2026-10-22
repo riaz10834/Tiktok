@@ -9,43 +9,58 @@ interface NavigationProps {
 }
 
 const Navigation = ({ activeTab, onTabChange, onUpload }: NavigationProps) => {
-  const navItems = [
-    { id: 'home', icon: Home, label: 'Home' },
-    { id: 'search', icon: Search, label: 'Search' },
-    { id: 'notifications', icon: Heart, label: 'Notifications' },
-    { id: 'profile', icon: User, label: 'Profile' }
+  const left = [
+    { id: 'home', icon: Home },
+    { id: 'search', icon: Search },
+  ];
+  const right = [
+    { id: 'notifications', icon: Heart },
+    { id: 'profile', icon: User },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border z-50">
-      <div className="flex items-center justify-around py-2 px-4 max-w-md mx-auto">
-        {navItems.map((item, index) => (
-          <div key={item.id} className="flex-1 flex justify-center">
-            {index === 2 ? (
-              // Upload button in the center
-              <Button
-                onClick={onUpload}
-                size="icon"
-                className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white border-0 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200"
-              >
-                <Plus className="w-6 h-6" />
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onTabChange(item.id)}
-                className={cn(
-                  "w-12 h-12 rounded-full transition-all duration-200",
-                  activeTab === item.id
-                    ? "text-primary bg-primary/10 scale-110"
-                    : "text-muted-foreground hover:text-foreground hover:scale-105"
-                )}
-              >
-                <item.icon className="w-6 h-6" />
-              </Button>
+    <nav className="absolute bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-md">
+      <div className="flex items-center justify-around py-2 px-2">
+        {left.map((item) => (
+          <Button
+            key={item.id}
+            variant="ghost"
+            size="icon"
+            onClick={() => onTabChange(item.id)}
+            className={cn(
+              'w-12 h-12 rounded-full transition-all duration-200',
+              activeTab === item.id
+                ? 'text-primary bg-primary/10 scale-110'
+                : 'text-muted-foreground hover:text-foreground'
             )}
-          </div>
+          >
+            <item.icon className="w-6 h-6" />
+          </Button>
+        ))}
+
+        <Button
+          onClick={onUpload}
+          size="icon"
+          className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-blue-500 hover:from-pink-600 hover:to-blue-600 text-white border-0 shadow-lg"
+        >
+          <Plus className="w-6 h-6" />
+        </Button>
+
+        {right.map((item) => (
+          <Button
+            key={item.id}
+            variant="ghost"
+            size="icon"
+            onClick={() => onTabChange(item.id)}
+            className={cn(
+              'w-12 h-12 rounded-full transition-all duration-200',
+              activeTab === item.id
+                ? 'text-primary bg-primary/10 scale-110'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <item.icon className="w-6 h-6" />
+          </Button>
         ))}
       </div>
     </nav>
