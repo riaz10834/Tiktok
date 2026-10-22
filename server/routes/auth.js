@@ -7,6 +7,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import pool from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { uploadPublicUrl } from '../publicUrl.js';
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -170,7 +171,7 @@ router.put('/profile', requireAuth, avatarUpload.single('avatar'), async (req, r
 
     let newAvatar = current.rows[0].avatar;
     if (req.file) {
-      newAvatar = `http://localhost:${process.env.PORT || 3001}/uploads/${req.file.filename}`;
+      newAvatar = uploadPublicUrl(req, req.file.filename);
     } else if (avatarUrl?.trim()) {
       newAvatar = avatarUrl.trim();
     }

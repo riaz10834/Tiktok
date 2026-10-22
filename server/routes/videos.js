@@ -5,6 +5,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import pool from '../db.js';
 import { requireAuth, optionalAuth } from '../middleware/auth.js';
+import { uploadPublicUrl } from '../publicUrl.js';
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -89,7 +90,7 @@ router.post('/', requireAuth, upload.single('video'), async (req, res) => {
     }
 
     const description = (req.body.description || '').trim();
-    const url = `http://localhost:${process.env.PORT || 3001}/uploads/${req.file.filename}`;
+    const url = uploadPublicUrl(req, req.file.filename);
 
     const { rows } = await pool.query(
       `INSERT INTO videos (user_id, url, description)

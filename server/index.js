@@ -21,7 +21,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/api/health', async (_req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.json({ ok: true, database: 'tiktok' });
+    res.json({ ok: true, database: process.env.DB_NAME || 'tiktok' });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -36,12 +36,17 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: err.message || 'Server error' });
 });
 
-app.listen(PORT, async () => {
-  try {
-    await pool.query('SELECT 1');
-    console.log(`API running on http://localhost:${PORT}`);
-    console.log('Connected to PostgreSQL database: tiktok');
-  } catch (err) {
-    console.error('Failed to connect to PostgreSQL:', err.message);
-  }
-});
+export default app;
+
+// Local / non-Vercel only — Vercel imports the app export
+if (!process.env.VERCEL) {
+  app.listen(PORT, async () => {
+    try {
+      await pool.query('SELECT 1');
+      console.log(`API running on http://localhost:${PORT}`);
+      console.log(`Connected to PostgreSQL database: ${process.env.DB_NAME || 'tiktok'}`);
+    } catch (err) {
+      console.error('Failed to connect to PostgreSQL:', err.message);
+    }
+  });
+}

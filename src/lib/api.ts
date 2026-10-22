@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Same-origin `/api` in production (Vercel rewrite → server service).
+// Local Vite can proxy `/api` to Express, or set VITE_API_URL.
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function getToken() {
   return localStorage.getItem('token');
